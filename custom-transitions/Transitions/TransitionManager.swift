@@ -11,6 +11,7 @@ final class TransitionManager: NSObject, UIViewControllerAnimatedTransitioning {
     
     private let duration: TimeInterval
     private var operation = UINavigationController.Operation.push
+    private var popSnapshots = [UIViewController: UIView]()
     
     init(duration: TimeInterval) {
         self.duration = duration
@@ -62,6 +63,8 @@ private extension TransitionManager {
                 let albumsViewController = fromViewController as? AlbumsViewController,
                 let detailsViewController = toViewController as? AlbumDetailViewController
             else { return }
+            
+            popSnapshots[albumsViewController] = fromViewController.view.snapshotView(afterScreenUpdates: false)
             
             presentViewController(detailsViewController, from: albumsViewController, with: context)
             
@@ -137,13 +140,20 @@ private extension TransitionManager {
         
         let containerView = context.containerView
         
-        let backgroundFillView = UIView()
-        backgroundFillView.frame = fromViewController.view.frame
-        AlbumsViewController.setupBackgroundColor(for: backgroundFillView)
+        let backgroundFillView: UIView
+        if let snapshot = popSnapshots[toViewController] {
+            backgroundFillView = snapshot
+            backgroundFillView.frame = fromViewController.view.frame
+            popSnapshots[toViewController] = nil
+        } else {
+            backgroundFillView = UIView()
+            backgroundFillView.frame = fromViewController.view.frame
+            AlbumsViewController.setupBackgroundColor(for: backgroundFillView)
+        }
         
         let snapshotContentView = UIView()
         snapshotContentView.backgroundColor = albumDetailRootView.backgroundColor
-        snapshotContentView.frame = containerView.convert(albumDetailHeaderView.frame, from: albumDetailRootView)
+        snapshotContentView.frame = albumDetailRootView.frame
         snapshotContentView.layer.cornerRadius = albumCell.contentView.layer.cornerRadius
         
         let snapshotAlbumCoverImageView = UIImageView()
