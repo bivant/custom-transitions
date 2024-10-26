@@ -43,7 +43,7 @@ extension TransitionManager: UINavigationControllerDelegate {
         
         self.operation = operation
         
-        if operation == .push {
+        if operation == .push || operation == .pop {
             return self
         }
         
@@ -71,7 +71,7 @@ private extension TransitionManager {
                 let albumsViewController = toViewController as? AlbumsViewController
             else { return }
             
-            dismissViewController(detailsViewController, to: albumsViewController)
+            dismissViewController(detailsViewController, to: albumsViewController, with: context)
             
         default:
             break
@@ -125,7 +125,56 @@ private extension TransitionManager {
         animator.startAnimation()
     }
     
-    func dismissViewController(_ fromViewController: AlbumDetailViewController, to toViewController: AlbumsViewController) {
+    func dismissViewController(_ fromViewController: AlbumDetailViewController, to toViewController: AlbumsViewController, with context: UIViewControllerContextTransitioning) {
+        guard
+            let albumCell = toViewController.currentCell,
+            let albumCoverImageView = toViewController.currentCell?.albumCoverImageView,
+            let albumDetailHeaderView = fromViewController.headerView,
+            let albumDetailRootView = fromViewController.view
+        else { return }
         
+        toViewController.view.layoutIfNeeded()
+        
+        let containerView = context.containerView
+        
+        let backgroundFillView = UIView()
+        backgroundFillView.frame = fromViewController.view.frame
+        AlbumsViewController.setupBackgroundColor(for: backgroundFillView)
+        
+        let snapshotContentView = UIView()
+        snapshotContentView.backgroundColor = albumDetailRootView.backgroundColor
+        snapshotContentView.frame = containerView.convert(albumDetailHeaderView.frame, from: albumDetailRootView)
+        snapshotContentView.layer.cornerRadius = albumCell.contentView.layer.cornerRadius
+        
+        let snapshotAlbumCoverImageView = UIImageView()
+        snapshotAlbumCoverImageView.clipsToBounds = true
+        snapshotAlbumCoverImageView.contentMode = albumDetailHeaderView.contentMode
+        snapshotAlbumCoverImageView.image = albumDetailHeaderView.albumCoverImageView.image
+        snapshotAlbumCoverImageView.layer.cornerRadius = albumDetailHeaderView.layer.cornerRadius
+        snapshotAlbumCoverImageView.frame = containerView.convert(albumDetailHeaderView.albumCoverImageView.frame, from: albumDetailHeaderView)
+        
+        containerView.addSubview(backgroundFillView)
+        containerView.addSubview(toViewController.view)
+        containerView.addSubview(snapshotContentView)
+        containerView.addSubview(snapshotAlbumCoverImageView)
+        
+        toViewController.view.isHidden = true
+        
+        let animator = UIViewPropertyAnimator(duration: duration, curve: .easeInOut) {
+            snapshotContentView.frame = containerView.convert(albumCell.contentView.frame, from: albumCell)
+            snapshotContentView.backgroundColor = albumCell.contentView.backgroundColor
+            snapshotAlbumCoverImageView.frame = containerView.convert(albumCoverImageView.frame, from: albumCell)
+            snapshotAlbumCoverImageView.layer.cornerRadius = albumCoverImageView.layer.cornerRadius
+        }
+        
+        animator.addCompletion { position in
+            toViewController.view.isHidden = false
+            backgroundFillView.removeFromSuperview()
+            snapshotAlbumCoverImageView.removeFromSuperview()
+            snapshotContentView.removeFromSuperview()
+            context.completeTransition(position == .end)
+        }
+        
+        animator.startAnimation()
     }
 }
