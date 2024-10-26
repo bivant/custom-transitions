@@ -43,9 +43,8 @@ class AlbumsViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
+        super.viewDidAppear(animated)
     }
-    
 }
 
 // MARK: - Setups
