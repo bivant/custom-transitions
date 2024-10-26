@@ -17,7 +17,7 @@ final class TransitionManager: NSObject, UIViewControllerAnimatedTransitioning {
     }
     
     func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-        return duration
+        duration
     }
     
     func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
@@ -36,10 +36,10 @@ final class TransitionManager: NSObject, UIViewControllerAnimatedTransitioning {
 // MARK: - UINavigationControllerDelegate
 
 extension TransitionManager: UINavigationControllerDelegate {
-    func navigationController(
-        _ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation,
-        from fromVC: UIViewController,
-        to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    func navigationController(_ navigationController: UINavigationController,
+                              animationControllerFor operation: UINavigationController.Operation,
+                              from fromVC: UIViewController,
+                              to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         
         self.operation = operation
         
@@ -84,7 +84,7 @@ private extension TransitionManager {
             let albumCell = fromViewController.currentCell,
             let albumCoverImageView = fromViewController.currentCell?.albumCoverImageView,
             let albumDetailHeaderView = toViewController.headerView
-        else { return}
+        else { return }
         
         toViewController.view.layoutIfNeeded()
         

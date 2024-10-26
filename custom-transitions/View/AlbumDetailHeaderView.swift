@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol AlbumDetailHeaderViewDelegate: class {
+protocol AlbumDetailHeaderViewDelegate: AnyObject {
     func closeButtonDidTap()
 }
 
