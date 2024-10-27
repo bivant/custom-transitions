@@ -45,16 +45,6 @@ class AlbumsViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
-    
-    static func setupBackgroundColor(for view: UIView) {
-        let gradient = CAGradientLayer()
-        gradient.frame = view.bounds
-        gradient.colors = [UIColor.backgroundColorGradient1 ?? .black, UIColor.backgroundColorGradient2 ?? .black].map { $0.cgColor }
-        gradient.startPoint = .init(x: 0.5, y: 0)
-        gradient.endPoint = .init(x: 0.5, y: 1)
-        gradient.locations = [0.5]
-        view.layer.insertSublayer(gradient, at: 0)
-    }
 }
 
 // MARK: - Setups
@@ -62,10 +52,20 @@ class AlbumsViewController: UIViewController {
 private extension AlbumsViewController {
     
     func setupUI() {
-        Self.setupBackgroundColor(for: view)
+        setupBackgroundColor()
         setupHeaderView()
         setupCollectionView()
         setupPageControl()
+    }
+    
+    func setupBackgroundColor() {
+        let gradient = CAGradientLayer()
+        gradient.frame = view.bounds
+        gradient.colors = [UIColor.backgroundColorGradient1 ?? .black, UIColor.backgroundColorGradient2 ?? .black].map { $0.cgColor }
+        gradient.startPoint = .init(x: 0.5, y: 0)
+        gradient.endPoint = .init(x: 0.5, y: 1)
+        gradient.locations = [0.5]
+        view.layer.insertSublayer(gradient, at: 0)
     }
     
     func setupHeaderView() {

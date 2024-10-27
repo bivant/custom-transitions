@@ -11,7 +11,6 @@ final class TransitionManager: NSObject, UIViewControllerAnimatedTransitioning {
     
     private let duration: TimeInterval
     private var operation = UINavigationController.Operation.push
-    private var popSnapshots = [UIViewController: UIView]()
     
     init(duration: TimeInterval) {
         self.duration = duration
@@ -63,8 +62,6 @@ private extension TransitionManager {
                 let albumsViewController = fromViewController as? AlbumsViewController,
                 let detailsViewController = toViewController as? AlbumDetailViewController
             else { return }
-            
-            popSnapshots[albumsViewController] = fromViewController.view.snapshotView(afterScreenUpdates: false)
             
             presentViewController(detailsViewController, from: albumsViewController, with: context)
             
@@ -140,17 +137,6 @@ private extension TransitionManager {
         
         let containerView = context.containerView
         
-        let backgroundFillView: UIView
-        if let snapshot = popSnapshots[toViewController] {
-            backgroundFillView = snapshot
-            backgroundFillView.frame = fromViewController.view.frame
-            popSnapshots[toViewController] = nil
-        } else {
-            backgroundFillView = UIView()
-            backgroundFillView.frame = fromViewController.view.frame
-            AlbumsViewController.setupBackgroundColor(for: backgroundFillView)
-        }
-        
         let snapshotContentView = UIView()
         snapshotContentView.backgroundColor = albumDetailRootView.backgroundColor
         snapshotContentView.frame = albumDetailRootView.frame
@@ -163,12 +149,9 @@ private extension TransitionManager {
         snapshotAlbumCoverImageView.layer.cornerRadius = albumDetailHeaderView.layer.cornerRadius
         snapshotAlbumCoverImageView.frame = containerView.convert(albumDetailHeaderView.albumCoverImageView.frame, from: albumDetailHeaderView)
         
-        containerView.addSubview(backgroundFillView)
         containerView.addSubview(toViewController.view)
         containerView.addSubview(snapshotContentView)
         containerView.addSubview(snapshotAlbumCoverImageView)
-        
-        toViewController.view.isHidden = true
         
         let animator = UIViewPropertyAnimator(duration: duration, curve: .easeInOut) {
             snapshotContentView.frame = containerView.convert(albumCell.contentView.frame, from: albumCell)
@@ -178,8 +161,6 @@ private extension TransitionManager {
         }
         
         animator.addCompletion { position in
-            toViewController.view.isHidden = false
-            backgroundFillView.removeFromSuperview()
             snapshotAlbumCoverImageView.removeFromSuperview()
             snapshotContentView.removeFromSuperview()
             context.completeTransition(position == .end)
